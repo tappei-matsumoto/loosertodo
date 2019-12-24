@@ -1,13 +1,9 @@
 <template>
   <q-infinite-scroll @load="onLoad" :offset="250">
-    <div v-for="(item, index) in items" :key="index" class="caption">
-      <q-slide-item @left="onLeft" @right="onRight" ref="todo" left-color="green" right-color="orange">
+    <div v-for="(item, index) in this.$store.state.todos.items" :key="index" class="caption">
+      <q-slide-item @left="onLeft(index)" @right="onRight" ref="todo" left-color="green" right-color="orange">
         <template v-slot:left>
-          <q-item @click="click(index)" clickable v-ripple>
-            <q-icon left size="3em" name="done" />
-            <div>Done</div>
-            <q-icon left size="3em" name="undo" />
-          </q-item>
+          {{index}}
         </template>
         <template v-slot:right>
           <div class="row items-center">
@@ -35,33 +31,24 @@
 
 <script>
 export default {
-  data () {
-    return {
-      index: 0,
-      items: [{ uuid: this.index++ }, { uuid: this.index++ }, { uuid: this.index++ }, { uuid: this.index++ }, { uuid: this.index++ }, { uuid: this.index++ }, { uuid: this.index++ }]
-    }
-  },
-
   methods: {
     onLoad (index, done) {
       setTimeout(() => {
-        if (this.items) {
-          this.items.push({ uuid: this.index++ }, { uuid: this.index++ }, { uuid: this.index++ }, { uuid: this.index++ }, { uuid: this.index++ }, { uuid: this.index++ }, { uuid: this.index++ })
-          done()
-        }
+        this.$store.commit('todos/addDemoData')
+        done()
       }, 2000)
     },
 
-    onLeft ({ reset }) {
-      this.$q.notify('Todoを完了にしました。')
+    onLeft (index) {
+      this.$store.commit('todos/remove', index)
+      this.$q.notify({
+        message: 'Todoを完了にしました。',
+        actions: [{ label: 'Undo', color: 'yellow', handler: () => { /* ... */ } }]
+      })
     },
 
     onRight ({ reset }) {
       this.$q.notify('Right action triggered. Resetting in 1 second.')
-    },
-
-    click (index) {
-      this.$refs.todo[index].reset()
     }
   }
 }
